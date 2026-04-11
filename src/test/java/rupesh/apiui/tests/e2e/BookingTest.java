@@ -7,6 +7,7 @@ import rupesh.apiui.base.BaseTest;
 import rupesh.apiui.core.context.TestContext;
 import rupesh.apiui.core.messaging.MessageManager;
 import rupesh.apiui.listeners.RetryAnalyzer;
+import rupesh.apiui.tests.api.BookingFlightTest;
 
 import java.util.List;
 
@@ -19,7 +20,7 @@ public class BookingTest extends BaseTest {
     public void endToEndFlow() {
 
         // API
-        String bookingId = bookingService.createBooking()
+        String bookingId = bookingService.createBooking(new BookingFlightTest())
                 .jsonPath().getString("id");
 
         TestContext.put("bookingId", bookingId);

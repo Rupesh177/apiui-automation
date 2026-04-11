@@ -4,6 +4,7 @@ package rupesh.apiui.base;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.BeforeSuite;
+import rupesh.apiui.api.client.TestDataClient;
 import rupesh.apiui.core.context.TestContext;
 import rupesh.apiui.core.db.DBMigration;
 import rupesh.apiui.core.driver.Driver;

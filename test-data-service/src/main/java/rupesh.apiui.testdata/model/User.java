@@ -1,8 +1,5 @@
 package rupesh.apiui.testdata.model;
 
-import lombok.extern.slf4j.Slf4j;
-
-@Slf4j
 public class User {
 
     public String getId() {
