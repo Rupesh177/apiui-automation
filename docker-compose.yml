@@ -1,0 +1,116 @@
+version: "3.8"
+
+services:
+
+  # -------------------------------
+  # SELENIUM GRID HUB
+  # -------------------------------
+  selenium-hub:
+    image: selenium/hub:4.21
+    container_name: selenium-hub
+    ports:
+      - "4444:4444"
+
+  # -------------------------------
+  # CHROME NODE
+  # -------------------------------
+  chrome-node:
+    image: selenium/node-chrome:4.21
+    depends_on:
+      - selenium-hub
+    shm_size: "2gb"
+    environment:
+      - SE_EVENT_BUS_HOST=selenium-hub
+      - SE_EVENT_BUS_PUBLISH_PORT=4442
+      - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
+
+  # -------------------------------
+  # HEALENIUM DB (POSTGRES)
+  # -------------------------------
+  hlm-postgres:
+    image: postgres:15
+    container_name: hlm-postgres
+    environment:
+      POSTGRES_DB: healenium
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5433:5432"
+
+  # -------------------------------
+  # HEALENIUM BACKEND
+  # -------------------------------
+  healenium:
+    image: healenium/hlm-backend:3.5.6
+    container_name: healenium
+    depends_on:
+      - hlm-postgres
+    ports:
+      - "7878:7878"
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://hlm-postgres:5432/healenium
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=postgres
+
+  # -------------------------------
+  # TEST DATA SERVICE
+  # -------------------------------
+  test-data:
+    build: ./test-data-service
+    container_name: test-data-service
+    ports:
+      - "8081:8081"
+
+  # -------------------------------
+  # PROMETHEUS
+  # -------------------------------
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+    ports:
+      - "9091:9090"
+
+  # -------------------------------
+  # GRAFANA
+  # -------------------------------
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    depends_on:
+      - prometheus
+
+  # -------------------------------
+  # TEST RUNNER (SCALABLE)
+  # -------------------------------
+  test-runner:
+    build: docker
+    depends_on:
+      - selenium-hub
+      - chrome-node
+      - test-data
+      - healenium
+    environment:
+      - GRID_URL=http://selenium-hub:4444/wd/hub
+      - TESTDATA_URL=http://test-data:8081
+      - SUITE=tests/testng.xml
+      - BROWSER=chrome
+      - HEADLESS=true
+      - REMOTE=true
+
+      # -------------------------------
+      # HEALENIUM FLAG
+      # -------------------------------
+      - healing=true
+
+      # -------------------------------
+      # OPTIONAL: TIA SUPPORT
+      # -------------------------------
+      - USE_TIA=true
+
+    volumes:
+      - ./allure-results:/app/allure-results
+      - ./allure-history:/app/allure-history

@@ -1,0 +1,14 @@
+version: "3.8"
+
+services:
+
+  selenium-hub:
+    ports: []
+
+  test-runner:
+    environment:
+      - HEADLESS=true
+      - KEEP_CONTAINER_ALIVE=false
+    volumes:
+      - ./allure-results:/app/allure-results
+      - ./allure-history:/app/allure-history

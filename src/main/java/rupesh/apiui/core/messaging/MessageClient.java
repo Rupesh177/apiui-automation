@@ -1,0 +1,7 @@
+package rupesh.apiui.core.messaging;
+
+import java.util.List;
+
+public interface MessageClient {
+    List<String> consume(String topic);
+}
