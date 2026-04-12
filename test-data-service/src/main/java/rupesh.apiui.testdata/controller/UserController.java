@@ -1,5 +1,6 @@
 package rupesh.apiui.testdata.controller;
 
+import main.java.rupesh.apiui.testdata.service.UserDataService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -8,7 +9,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import rupesh.apiui.testdata.model.User;
-import rupesh.apiui.testdata.service.UserDataService;
 
 import java.sql.SQLException;
 

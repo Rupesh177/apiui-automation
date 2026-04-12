@@ -1,4 +1,4 @@
-package rupesh.apiui.ui.pages;
+package rupesh.apiui.pages;
 
 import rupesh.apiui.core.driver.Driver;
 import rupesh.apiui.core.driver.DriverManager;

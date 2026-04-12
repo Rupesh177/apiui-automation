@@ -1,4 +1,4 @@
-package rupesh.apiui.testdata.client;
+package rupesh.apiui.api.client;
 
 import io.restassured.response.Response;
 import rupesh.apiui.core.context.TestContext;
@@ -12,8 +12,8 @@ public class TestDataClient {
 
     public static Map<String, String> createUser() {
 
-        String existingUserId = TestContext.get("userId");
-        String existingEmail = TestContext.get("userEmail");
+        String existingUserId = TestContext.get("userId").toString();
+        String existingEmail = TestContext.get("userEmail").toString();
 
         if (existingUserId != null && existingEmail != null) {
             return Map.of(

@@ -1,17 +1,16 @@
-package rupesh.apiui.testdata.service;
+package main.java.rupesh.apiui.testdata.service;
 
 import org.springframework.stereotype.Service;
-import rupesh.testdata.event.EventPublisher;
-import rupesh.testdata.model.User;
-import rupesh.testdata.repository.UserRepository;
+import rupesh.apiui.testdata.event.EventPublisher;
+import rupesh.apiui.testdata.model.User;
+import rupesh.apiui.testdata.repository.UserRepository;
 
 import java.sql.SQLException;
 
 @Service
 public class UserDataService {
 
-    @Autowired
-    private UserRepository repo;
+    private final UserRepository repo;
     private final EventPublisher publisher;
 
     public UserDataService(UserRepository repo, EventPublisher publisher) {
