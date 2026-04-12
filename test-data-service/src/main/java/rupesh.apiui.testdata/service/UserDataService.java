@@ -1,10 +1,9 @@
 package rupesh.apiui.testdata.service;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
-import rupesh.apiui.testdata.model.User;
-import rupesh.apiui.testdata.repository.UserRepository;
+import rupesh.testdata.event.EventPublisher;
+import rupesh.testdata.model.User;
+import rupesh.testdata.repository.UserRepository;
 
 import java.sql.SQLException;
 
@@ -13,9 +12,12 @@ public class UserDataService {
 
     @Autowired
     private UserRepository repo;
+    private final EventPublisher publisher;
 
-    @Autowired(required = false)
-    private KafkaTemplate<String, String> kafkaTemplate;
+    public UserDataService(UserRepository repo, EventPublisher publisher) {
+        this.repo = repo;
+        this.publisher = publisher;
+    }
 
     public User createUser() throws SQLException {
 
@@ -34,9 +36,7 @@ public class UserDataService {
         // -------------------------------
         // OPTIONAL: KAFKA EVENT
         // -------------------------------
-        if (kafkaTemplate != null) {
-            kafkaTemplate.send("user-created", id);
-        }
+        publisher.publishUserCreated(id);
 
         return user;
     }

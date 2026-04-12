@@ -1,14 +1,27 @@
-package rupesh.apiui.api.client;
+package rupesh.apiui.testdata.client;
 
 import io.restassured.response.Response;
 import rupesh.apiui.core.context.TestContext;
 import rupesh.apiui.utils.Config;
+
 import java.util.Map;
+
 import static io.restassured.RestAssured.given;
 
 public class TestDataClient {
 
     public static Map<String, String> createUser() {
+
+        String existingUserId = TestContext.get("userId");
+        String existingEmail = TestContext.get("userEmail");
+
+        if (existingUserId != null && existingEmail != null) {
+            return Map.of(
+                    "id", existingUserId,
+                    "email", existingEmail,
+                    "password", "pass"
+            );
+        }
 
         Response response = given()
                 .baseUri(Config.getTestDataUrl())
@@ -18,6 +31,7 @@ public class TestDataClient {
         String email = response.jsonPath().getString("email");
 
         TestContext.put("userId", id);
+        TestContext.put("userEmail", email);
 
         return Map.of(
                 "id", id,
