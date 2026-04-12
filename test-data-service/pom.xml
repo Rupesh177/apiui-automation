@@ -3,21 +3,17 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>org.example</groupId>
-        <artifactId>APIUI</artifactId>
+        <groupId>org.rupesh</groupId>
+        <artifactId>aggregator</artifactId>
         <version>1.0-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
-
-    <artifactId>test-data-service</artifactId>
+    <artifactId>test.data</artifactId>
     <packaging>jar</packaging>
 
     <name>test-data-service</name>
 
-    <build>
-        <sourceDirectory>src</sourceDirectory>
-        <testSourceDirectory>src</testSourceDirectory>
-    </build>
+
 
     <dependencies>
         <dependency>

@@ -4,9 +4,9 @@
 
     <!-- Listeners -->
     <listeners>
-        <listener class-name="rupesh.apiui.listeners.TestListener"/>
+        <listener class-name="org.rupesh.app.listeners.TestListener"/>
         <listener class-name="io.qameta.allure.testng.AllureTestNg"/>
-        <listener class-name="rupesh.apiui.listeners.RetryListener"/>
+        <listener class-name="org.rupesh.app.listeners.RetryListener"/>
     </listeners>
 
     <!-- UI Tests -->
@@ -17,7 +17,7 @@
             </run>
         </groups>
         <classes>
-            <class name="rupesh.apiui.tests.ui.LoginTest"/>
+            <class name="org.rupesh.app.tests.ui.LoginTest"/>
         </classes>
     </test>
 
