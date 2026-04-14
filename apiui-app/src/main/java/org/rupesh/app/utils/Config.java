@@ -75,6 +75,25 @@ public class Config {
     }
 
     // -------------------------------
+    // VAULT
+    // -------------------------------
+    public static boolean isVaultEnabled() {
+        return getBoolean("vault.enabled", "false");
+    }
+
+    public static String getVaultUrl() {
+        return get("vault.url", "http://localhost:8200");
+    }
+
+    public static String getVaultToken() {
+        return get("vault.token", "");
+    }
+
+    public static String getVaultSecretPath() {
+        return get("vault.secret.path", "/v1/secret/data/test");
+    }
+
+    // -------------------------------
     // JIRA
     // -------------------------------
     public static boolean isJiraEnabled() {
