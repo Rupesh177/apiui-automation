@@ -12,9 +12,8 @@ public class FeatureFlagService {
 
     public boolean isEnabled(String featureName) {
 
-        Boolean overridden = FeatureFlagContext.get(featureName);
-
-        if (overridden != null) {
+        if (FeatureFlagContext.contains(featureName)) {
+            boolean overridden = Boolean.TRUE.equals(FeatureFlagContext.get(featureName));
             log.info("Feature flag override applied. feature={} enabled={}", featureName, overridden);
             return overridden;
         }

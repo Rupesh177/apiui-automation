@@ -8,7 +8,7 @@ import java.time.Duration;
 
 public class SeleniumDriver implements Driver {
 
-    private WebDriver driver;
+    private final WebDriver driver;
 
     public SeleniumDriver() {
         this.driver = WebDriverBuilder.build();
@@ -42,17 +42,19 @@ public class SeleniumDriver implements Driver {
     // -------------------------------
     @Override
     public void click(By by) {
-        driver.findElement(by).click();
+        find(by).click();
     }
 
     @Override
     public void type(By by, String text) {
-        driver.findElement(by).sendKeys(text);
+        WebElement element = find(by);
+        element.clear();
+        element.sendKeys(text);
     }
 
     @Override
     public String getText(By by) {
-        return driver.findElement(by).getText();
+        return find(by).getText();
     }
 
     @Override

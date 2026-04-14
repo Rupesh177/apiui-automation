@@ -10,31 +10,55 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
-public class KafkaClient implements MessageClient{
+import org.apache.kafka.clients.consumer.*;
+import org.rupesh.app.exceptionNretry.FrameworkException;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.*;
+
+public class KafkaClient implements MessageClient {
+
+    private static final Logger log =
+            LoggerFactory.getLogger(KafkaClient.class);
 
     @Override
     public List<String> consume(String topic) {
+
         Properties props = new Properties();
-        props.put("bootstrap.servers", Config.getKafkaUrl());
-        props.put("group.id", "test-group");
-        props.put("auto.offset.reset", "latest");
+        props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, Config.getKafkaUrl());
+        props.put(ConsumerConfig.GROUP_ID_CONFIG, "test-group-" + UUID.randomUUID());
+        props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "latest");
 
-        KafkaConsumer<String, String> consumer =
-                new KafkaConsumer<>(props);
-
-        consumer.subscribe(List.of(topic));
-
-        ConsumerRecords<String, String> records =
-                consumer.poll(Duration.ofSeconds(10));
+        props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG,
+                "org.apache.kafka.common.serialization.StringDeserializer");
+        props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG,
+                "org.apache.kafka.common.serialization.StringDeserializer");
 
         List<String> messages = new ArrayList<>();
 
-        for (ConsumerRecord<String, String> record : records) {
-            messages.add(record.value());
+        try (KafkaConsumer<String, String> consumer = new KafkaConsumer<>(props)) {
+
+            consumer.subscribe(Collections.singletonList(topic));
+
+            Duration timeout = Duration.ofSeconds(
+                    Config.getInt("kafka.poll.timeout", 10)
+            );
+
+            ConsumerRecords<String, String> records = consumer.poll(timeout);
+
+            for (ConsumerRecord<String, String> record : records) {
+                messages.add(record.value());
+            }
+
+            log.info("Kafka consume completed. topic={} count={}", topic, messages.size());
+
+            return messages;
+
+        } catch (Exception e) {
+            log.error("Kafka consume failed. topic={}", topic, e);
+            throw new FrameworkException("Kafka consume failed", e);
         }
-
-        consumer.close();
-
-        return messages;
     }
 }

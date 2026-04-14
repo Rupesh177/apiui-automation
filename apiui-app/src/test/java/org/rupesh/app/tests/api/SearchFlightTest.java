@@ -17,7 +17,7 @@ public class SearchFlightTest extends BaseTest {
     @Test(groups = {"api"}, retryAnalyzer = RetryAnalyzer.class)
     public void searchFlightsTest() {
 
-        Response response = new BookingService().searchFlight();
+        Response response = new BookingService().searchFlights();
         validator.validate(response, "schema/booking-schema.json");   //Contract testing
         Assert.assertEquals(response.statusCode(), 200);
     }

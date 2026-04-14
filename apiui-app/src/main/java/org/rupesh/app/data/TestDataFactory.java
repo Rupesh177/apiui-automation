@@ -3,32 +3,44 @@ package org.rupesh.app.data;
 import org.rupesh.app.api.model.BookingRequest;
 import org.rupesh.app.api.model.LoginRequest;
 
+
 public class TestDataFactory {
 
-    private TestDataFactory() {}
+    private static final String BOOKING_TEMPLATE = "testdata/booking.json";
+    private static final String LOGIN_TEMPLATE = "testdata/login.json";
+
+    private TestDataFactory() {
+    }
 
     // -------------------------------
     // BOOKING
     // -------------------------------
-    public static BookingRequest createBookingRequest(String source, String destination) {
+    public static BookingRequest createBookingRequest(BookingRequest override) {
 
-        BookingRequest request = TestDataLoader.load("schema/booking.json", BookingRequest.class);
+        BookingRequest base =
+                TestDataLoader.load(BOOKING_TEMPLATE, BookingRequest.class);
 
-        if (source != null) {
-            request.setSource(source);
+        if (override == null) {
+            return base;
         }
 
-        if (destination != null) {
-            request.setDestination(destination);
+        if (override.getSource() != null) {
+            base.setSource(override.getSource());
         }
 
-        return request;
+        if (override.getDestination() != null) {
+            base.setDestination(override.getDestination());
+        }
+
+        // future safe: add more fields here
+
+        return base;
     }
 
     // -------------------------------
-    // LOGIN (future use)
+    // LOGIN
     // -------------------------------
     public static LoginRequest createLoginRequest() {
-        return TestDataLoader.load("schema/login.json", LoginRequest.class);
+        return TestDataLoader.load(LOGIN_TEMPLATE, LoginRequest.class);
     }
 }

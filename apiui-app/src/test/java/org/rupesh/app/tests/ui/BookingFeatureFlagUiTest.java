@@ -1,13 +1,14 @@
 package org.rupesh.app.tests.ui;
 
 import org.rupesh.app.actions.BookingActions;
+import org.rupesh.app.base.BaseTest;
 import org.rupesh.app.core.featureFlag.FeatureFlagContext;
 import org.rupesh.app.dataprovider.FeatureFlagDataProvider;
 import org.rupesh.app.utils.Config;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
-public class BookingFeatureFlagUiTest {
+public class BookingFeatureFlagUiTest extends BaseTest {
 
     @Test(dataProvider = "featureToggle", dataProviderClass = FeatureFlagDataProvider.class)
     public void bookingFlowFeatureToggleUiTest(boolean enabled) {

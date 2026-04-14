@@ -1,5 +1,8 @@
 package org.rupesh.app.tests.e2e;
 
+import org.rupesh.app.api.model.BookingRequest;
+import org.rupesh.app.data.TestDataFactory;
+import org.rupesh.app.utils.Config;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 import org.rupesh.app.api.services.BookingService;
@@ -14,14 +17,22 @@ import java.util.List;
 
 public class BookingTest extends BaseTest {
 
-    private final BookingService bookingService= new BookingService();
+    private final BookingService bookingService = new BookingService();
 
     @Test(groups = {"ui"}, retryAnalyzer = RetryAnalyzer.class)
     public void endToEndFlow() {
 
         // API
-        String bookingId = bookingService.createBooking(new BookingFlightTest())
-                .jsonPath().getString("id");
+        BookingRequest override = new BookingRequest();
+        override.setSource("DEL");
+        override.setDestination("BOM");
+
+        BookingRequest request = TestDataFactory.createBookingRequest(override);
+
+        String bookingId = bookingService
+                .createBooking(request)
+                .jsonPath()
+                .getString("id");
 
         TestContext.put("bookingId", bookingId);
 
@@ -35,7 +46,7 @@ public class BookingTest extends BaseTest {
         );
 
         // UI
-        driver().open("https://www.makemytrip.com");
+        driver().open(Config.getBaseUrl());
         // validate UI
     }
 }

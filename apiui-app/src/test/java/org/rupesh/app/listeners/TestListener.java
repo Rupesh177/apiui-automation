@@ -2,6 +2,10 @@ package org.rupesh.app.listeners;
 
 import io.qameta.allure.Allure;
 import org.rupesh.app.core.failure.*;
+import org.rupesh.app.core.processor.ApiLogProcessor;
+import org.rupesh.app.core.processor.FailureProcessor;
+import org.rupesh.app.core.processor.JiraProcessor;
+import org.rupesh.app.core.processor.ScreenshotProcessor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testng.ITestContext;

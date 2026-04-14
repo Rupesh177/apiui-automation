@@ -1,10 +1,11 @@
-package org.rupesh.app.core.failure;
+package org.rupesh.app.core.processor;
 
 import io.qameta.allure.Allure;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.rupesh.app.core.failure.FailureContext;
 import org.rupesh.app.core.integration.jira.JIRAService;
 import org.rupesh.app.utils.Config;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class JiraProcessor implements FailureProcessor {
 
@@ -38,7 +39,7 @@ public class JiraProcessor implements FailureProcessor {
             context.put("jiraKey", issueKey);
 
             // -------------------------------
-            //  ADD ALLURE LINK
+            // ADD ALLURE LINK
             // -------------------------------
             Allure.link(
                     "Jira Bug",
@@ -52,27 +53,13 @@ public class JiraProcessor implements FailureProcessor {
 
             if (screenshot != null) {
                 jiraService.attachScreenshot(issueKey, screenshot);
-                log.info("📎 Screenshot attached to {}", issueKey);
+                log.info("Screenshot attached to {}", issueKey);
             }
 
-            // -------------------------------
-            // ATTACH API LOGS
-            // -------------------------------
-            String request = (String) context.get("apiRequest");
-            String response = (String) context.get("apiResponse");
-
-            if (request != null) {
-                jiraService.attachText(issueKey, "request.txt", request);
-            }
-
-            if (response != null) {
-                jiraService.attachText(issueKey, "response.txt", response);
-            }
-
-            log.info("🐞 Jira processing completed for {}", issueKey);
+            log.info("Jira processing completed for {}", issueKey);
 
         } catch (Exception e) {
-            log.error("❌ Jira processing failed", e);
+            log.error("Jira processing failed", e);
         }
     }
 }

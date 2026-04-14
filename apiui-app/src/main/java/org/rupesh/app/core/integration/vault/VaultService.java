@@ -2,10 +2,12 @@ package org.rupesh.app.core.integration.vault;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import org.rupesh.app.utils.Config;
 
+import org.rupesh.app.utils.Config;
+import org.rupesh.app.exceptionNretry.FrameworkException;
 
 public class VaultService {
 
@@ -19,13 +21,21 @@ public class VaultService {
     public String getSecret(String key) {
 
         if (!Config.isVaultEnabled()) {
-            throw new RuntimeException("Vault is disabled but secret was requested: " + key);
+            throw new FrameworkException(
+                    "Vault is disabled but secret was requested: " + key
+            );
         }
 
-        return CACHE.computeIfAbsent(key, k -> {
-            log.info("Fetching secret from Vault for key={}", k);
-            return vaultClient.getSecret(k);
-        });
+        try {
+            return CACHE.computeIfAbsent(key, k -> {
+                log.debug("Fetching secret from Vault for key={}", k);
+                return vaultClient.getSecret(k);
+            });
+
+        } catch (Exception e) {
+            log.error("Failed to fetch secret from Vault for key={}", key, e);
+            throw new FrameworkException("Vault secret fetch failed", e);
+        }
     }
 
     public void clearCache() {

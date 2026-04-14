@@ -1,19 +1,48 @@
 package org.rupesh.app.utils;
 
-import java.util.Optional;
-
 public class Config {
+
+    private Config() {
+    }
 
     // -------------------------------
     // CORE RESOLVER
     // -------------------------------
-    private static String get(String key, String defaultValue) {
-        return Optional.ofNullable(System.getProperty(key))
-                .orElseGet(() -> System.getenv().getOrDefault(key.toUpperCase().replace(".", "_"), defaultValue));
+    public static String get(String key, String defaultValue) {
+
+        String value = System.getProperty(key);
+
+        if (value == null || value.isBlank()) {
+            value = System.getenv(key.toUpperCase().replace(".", "_"));
+        }
+
+        if (value == null || value.isBlank()) {
+            return defaultValue;
+        }
+
+        return value.trim();
     }
 
-    private static boolean getBoolean(String key, String defaultValue) {
-        return Boolean.parseBoolean(get(key, defaultValue));
+    public static boolean getBoolean(String key, String defaultValue) {
+        String value = get(key, defaultValue);
+        return value.equalsIgnoreCase("true")
+                || value.equalsIgnoreCase("1")
+                || value.equalsIgnoreCase("yes");
+    }
+
+    public static int getInt(String key, int defaultValue) {
+        try {
+            return Integer.parseInt(get(key, String.valueOf(defaultValue)));
+        } catch (NumberFormatException e) {
+            throw new RuntimeException("Invalid integer config for key: " + key, e);
+        }
+    }
+
+    // -------------------------------
+    // ENVIRONMENT
+    // -------------------------------
+    public static String getEnv() {
+        return get("env", "dev");
     }
 
     // -------------------------------
@@ -94,6 +123,21 @@ public class Config {
     }
 
     // -------------------------------
+    // JMeter
+    // -------------------------------
+    public static String getJMeterPath() {
+        return get("jmeter.path", "jmeter");
+    }
+
+    public static String getJMeterTestPlan() {
+        return get("jmeter.testplan", "test-plan.jmx");
+    }
+
+    public static String getJMeterResult() {
+        return get("jmeter.result", "results.jtl");
+    }
+
+    // -------------------------------
     // JIRA
     // -------------------------------
     public static boolean isJiraEnabled() {
@@ -129,6 +173,10 @@ public class Config {
     // -------------------------------
     // UI / DRIVER
     // -------------------------------
+    public static String getDriverType() {
+        return get("driver", "selenium");
+    }
+
     public static String getBrowser() {
         return get("browser", "chrome");
     }

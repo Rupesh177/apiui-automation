@@ -4,10 +4,8 @@ import org.rupesh.app.core.driver.Driver;
 import org.rupesh.app.core.driver.DriverManager;
 import org.rupesh.app.core.featureFlag.FeatureFlagService;
 
-
 public class BookingPage {
 
-    private final Driver driver = DriverManager.getDriver();
     private final FeatureFlagService featureFlagService = new FeatureFlagService();
 
     // -------------------------------
@@ -30,31 +28,35 @@ public class BookingPage {
     private final String searchBtn = "//button[@id='search-booking']";
     private final String bookingConfirmation = "//div[@id='booking-confirmation']";
 
+    private Driver driver() {
+        return DriverManager.getDriver();
+    }
+
     public void enterSource(String source) {
-        driver.type(sourceCityInput, source);
+        driver().type(sourceCityInput, source);
     }
 
     public void enterDestination(String destination) {
-        driver.type(destinationCityInput, destination);
+        driver().type(destinationCityInput, destination);
     }
 
     public void search() {
-        driver.click(searchBtn);
+        driver().click(searchBtn);
     }
 
     public void proceedBooking() {
         boolean newFlow = featureFlagService.isEnabled("NEW_BOOKING_FLOW");
 
         if (newFlow) {
-            driver.click(newContinueBtn);
+            driver().click(newContinueBtn);
         } else {
-            driver.click(legacyContinueBtn);
+            driver().click(legacyContinueBtn);
         }
     }
 
     public boolean isNewFlowVisible() {
         try {
-            String text = driver.getText(newFlowContainer);
+            String text = driver().getText(newFlowContainer);
             return text != null && !text.isBlank();
         } catch (Exception e) {
             return false;
@@ -63,7 +65,7 @@ public class BookingPage {
 
     public boolean isLegacyFlowVisible() {
         try {
-            String text = driver.getText(legacyFlowContainer);
+            String text = driver().getText(legacyFlowContainer);
             return text != null && !text.isBlank();
         } catch (Exception e) {
             return false;
@@ -72,7 +74,7 @@ public class BookingPage {
 
     public boolean isBookingConfirmed() {
         try {
-            String text = driver.getText(bookingConfirmation);
+            String text = driver().getText(bookingConfirmation);
             return text != null && !text.isBlank();
         } catch (Exception e) {
             return false;
