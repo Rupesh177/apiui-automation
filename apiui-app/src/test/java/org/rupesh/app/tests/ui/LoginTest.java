@@ -3,12 +3,14 @@ package org.rupesh.app.tests.ui;
 import io.qameta.allure.Epic;
 import io.qameta.allure.Feature;
 import io.qameta.allure.Story;
+import org.rupesh.app.api.model.LoginRequest;
+import org.rupesh.app.data.TestDataFactory;
+import org.rupesh.app.listeners.RetryAnalyzer;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 import org.rupesh.app.api.client.TestDataClient;
 import org.rupesh.app.base.BaseTest;
 import org.rupesh.app.core.context.TestContext;
-import org.rupesh.app.listeners.RetryAnalyzer;
 import org.rupesh.app.pages.LoginPage;
 import org.rupesh.app.utils.Config;
 
@@ -24,15 +26,19 @@ public class LoginTest extends BaseTest {
     public void loginTest() {
 
         // -------------------------------
-        // TEST DATA (from service)
+        // TEMPLATE DATA
+        // -------------------------------
+        LoginRequest loginRequest = TestDataFactory.createLoginRequest();
+
+        // -------------------------------
+        // DYNAMIC TEST DATA (from service)
         // -------------------------------
         Map<String, String> user =
                 TestDataClient.createUser();
 
-        String email = user.get("email");
-        String password = user.get("password");
+        loginRequest.setEmail(user.get("email"));
 
-        TestContext.put("email", email);
+        TestContext.put("email", loginRequest.getEmail());
 
         // -------------------------------
         // UI FLOW
@@ -40,11 +46,10 @@ public class LoginTest extends BaseTest {
         driver().open(Config.getBaseUrl());
 
         LoginPage loginPage = new LoginPage();
-
-        loginPage.login(email, password);
+        loginPage.login(loginRequest.getEmail(), loginRequest.getPassword());
 
         // -------------------------------
-        // ASSERTION (IMPORTANT)
+        // ASSERTION
         // -------------------------------
         Assert.assertTrue(
                 loginPage.isLoggedIn(),

@@ -1,4 +1,4 @@
-package org.rupesh.app.TestGenerator;
+package org.rupesh.app.testGenerator;
 
 import org.rupesh.app.core.ai.generator.AITestGenerator;
 

@@ -1,6 +1,10 @@
 package org.rupesh.app.tests.api;
 
 import io.qameta.allure.Feature;
+import org.rupesh.app.api.db.BookingRepository;
+import org.rupesh.app.api.model.BookingRequest;
+import org.rupesh.app.data.TestDataFactory;
+import org.testng.Assert;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.Test;
 import org.rupesh.app.api.services.BookingService;
@@ -13,25 +17,23 @@ import java.util.Map;
 public class BookingFlightTest {
 
     @Feature("Validate Flight Booking against DB")
-    @Test(groups = {"api"})
-    public void validateBookingInDB() throws Exception {
+    @Test
+    public void validateBookingInDB() {
 
-        String bookingId = new BookingService().createBooking(new BookingFlightTest())
-                .jsonPath().getString("id");
+        BookingService bookingService = new BookingService();
+        BookingRepository bookingRepository = new BookingRepository();
 
-        List<Map<String, Object>> rs = new DBUtil().executeQuery(
-                "SELECT * FROM bookings WHERE id = '" + bookingId + "'"
-        );
+        BookingRequest request = TestDataFactory.createBookingRequest("DEL", "BOM");
 
-//        Assert.assertTrue(rs.next());
-//        Assert.assertEquals(rs.getString("status"), "CONFIRMED");
-//        TestContext.put("bookingId", id);  // ← remember what we created
-    }
+        String bookingId = bookingService
+                .createBooking(request)
+                .jsonPath()
+                .getString("id");
 
-    @AfterMethod
-    public void cleanup() {
-        String id = (String) TestContext.get("bookingId");  // ← retrieve it
-        TestContext.put("bookingId", id);  // ← remember what we created
-        TestContext.clear();
+        TestContext.put("bookingId", bookingId);
+
+        String status = bookingRepository.getBookingStatus(bookingId);
+
+        Assert.assertEquals(status, "CONFIRMED");
     }
 }

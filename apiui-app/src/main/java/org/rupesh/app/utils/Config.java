@@ -57,6 +57,13 @@ public class Config {
     }
 
     // -------------------------------
+    // FEATURE FLAGS
+    // -------------------------------
+    public static String getFeatureFlagUrl() {
+        return get("feature.flag.url", "http://localhost:8090");
+    }
+
+    // -------------------------------
     // Grafana
     // -------------------------------
     public static boolean isMetricsEnabled() {

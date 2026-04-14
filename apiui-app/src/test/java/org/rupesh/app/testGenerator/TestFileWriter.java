@@ -1,6 +1,4 @@
-package org.rupesh.app.TestGenerator;
-
-
+package org.rupesh.app.testGenerator;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
