@@ -1,25 +1,22 @@
 package org.rupesh.app.tests.e2e;
 
 import org.rupesh.app.api.model.BookingRequest;
-import org.rupesh.app.data.TestDataFactory;
-import org.rupesh.app.utils.Config;
-import org.testng.Assert;
-import org.testng.annotations.Test;
 import org.rupesh.app.api.services.BookingService;
 import org.rupesh.app.base.BaseTest;
 import org.rupesh.app.core.context.TestContext;
 import org.rupesh.app.core.messaging.MessageManager;
-import org.rupesh.app.listeners.RetryAnalyzer;
-import org.rupesh.app.tests.api.BookingFlightTest;
+import org.rupesh.app.data.TestDataFactory;
+import org.rupesh.app.utils.Config;
+import org.testng.Assert;
+import org.testng.annotations.Test;
 
 import java.util.List;
-
 
 public class BookingTest extends BaseTest {
 
     private final BookingService bookingService = new BookingService();
 
-    @Test(groups = {"ui"}, retryAnalyzer = RetryAnalyzer.class)
+    @Test(groups = {"e2e", "api", "ui", "kafka"})
     public void endToEndFlow() {
 
         // API
@@ -37,8 +34,7 @@ public class BookingTest extends BaseTest {
         TestContext.put("bookingId", bookingId);
 
         // Kafka
-        List<String> events = MessageManager.get()
-                .consume("booking-events");
+        List<String> events = MessageManager.get().consume("booking-events");
 
         Assert.assertTrue(
                 events.stream().anyMatch(e -> e.contains(bookingId)),
@@ -47,6 +43,12 @@ public class BookingTest extends BaseTest {
 
         // UI
         driver().open(Config.getBaseUrl());
-        // validate UI
+
+        bookingActions().completeBooking("DEL", "BOM");
+
+        Assert.assertTrue(
+                bookingActions().isBookingConfirmed(),
+                "Booking should be confirmed in UI"
+        );
     }
 }

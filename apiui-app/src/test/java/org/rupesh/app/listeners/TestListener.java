@@ -1,19 +1,20 @@
 package org.rupesh.app.listeners;
 
 import io.qameta.allure.Allure;
-import org.rupesh.app.core.failure.*;
+import org.rupesh.app.core.failure.FailureContext;
+import org.rupesh.app.core.failure.FailureHandler;
+import org.rupesh.app.core.monitoring.MetricsCollector;
+import org.rupesh.app.core.monitoring.MetricsServer;
 import org.rupesh.app.core.processor.ApiLogProcessor;
 import org.rupesh.app.core.processor.FailureProcessor;
 import org.rupesh.app.core.processor.JiraProcessor;
 import org.rupesh.app.core.processor.ScreenshotProcessor;
+import org.rupesh.app.utils.Config;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testng.ITestContext;
 import org.testng.ITestListener;
 import org.testng.ITestResult;
-import org.rupesh.app.core.monitoring.MetricsCollector;
-import org.rupesh.app.core.monitoring.MetricsServer;
-import org.rupesh.app.utils.Config;
 
 import java.io.ByteArrayInputStream;
 import java.util.ArrayList;
@@ -25,42 +26,34 @@ public class TestListener implements ITestListener {
             LoggerFactory.getLogger(TestListener.class);
 
     @Override
+    public void onStart(ITestContext context) {
+        if (Config.isMetricsEnabled()) {
+            MetricsServer.start();
+        }
+    }
+
+    @Override
     public void onTestFailure(ITestResult result) {
 
-        log.error("❌ Test Failed: {}", result.getName(), result.getThrowable());
+        log.error("Test failed: {}", result.getName(), result.getThrowable());
         MetricsCollector.fail();
 
-        // -------------------------------
-        // BUILD FAILURE CONTEXT
-        // -------------------------------
         FailureContext context = new FailureContext(
                 result.getName(),
                 result.getThrowable()
         );
 
-        // -------------------------------
-        // BUILD PROCESSOR PIPELINE
-        // -------------------------------
         List<FailureProcessor> processors = new ArrayList<>();
-
-        // Always capture screenshot (if driver exists)
         processors.add(new ScreenshotProcessor());
 
-        // Add Jira-related processors only if enabled
         if (Config.isJiraEnabled()) {
             processors.add(new JiraProcessor());
             processors.add(new ApiLogProcessor());
         }
 
-        // -------------------------------
-        // EXECUTE FAILURE HANDLER
-        // -------------------------------
         FailureHandler handler = new FailureHandler(processors);
         handler.handle(context);
 
-        // -------------------------------
-        // ALLURE ATTACHMENT (Adapter responsibility)
-        // -------------------------------
         try {
             byte[] screenshot = (byte[]) context.get("screenshot");
 
@@ -72,25 +65,19 @@ public class TestListener implements ITestListener {
             }
 
         } catch (Exception e) {
-            log.warn("⚠ Failed to attach screenshot to Allure");
+            log.warn("Failed to attach screenshot to Allure", e);
         }
     }
 
     @Override
     public void onTestSuccess(ITestResult result) {
         MetricsCollector.pass();
-        log.info("PASSED");
-    }
-
-    @Override
-    public void onStart(ITestContext context) {
-        if (Config.isMetricsEnabled()) {
-            MetricsServer.start();
-        }
+        log.info("Test passed: {}", result.getName());
     }
 
     @Override
     public void onTestSkipped(ITestResult result) {
         MetricsCollector.skip();
+        log.warn("Test skipped: {}", result.getName());
     }
 }

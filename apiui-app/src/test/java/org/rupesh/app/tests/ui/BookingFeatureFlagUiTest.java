@@ -10,7 +10,11 @@ import org.testng.annotations.Test;
 
 public class BookingFeatureFlagUiTest extends BaseTest {
 
-    @Test(dataProvider = "featureToggle", dataProviderClass = FeatureFlagDataProvider.class)
+    @Test(
+            groups = {"ui", "featureFlag"},
+            dataProvider = "featureToggle",
+            dataProviderClass = FeatureFlagDataProvider.class
+    )
     public void bookingFlowFeatureToggleUiTest(boolean enabled) {
 
         FeatureFlagContext.put("NEW_BOOKING_FLOW", enabled);

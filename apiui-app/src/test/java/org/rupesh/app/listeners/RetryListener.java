@@ -1,5 +1,6 @@
 package org.rupesh.app.listeners;
 
+import org.rupesh.app.utils.Config;
 import org.testng.IAnnotationTransformer;
 import org.testng.annotations.ITestAnnotation;
 
@@ -14,6 +15,12 @@ public class RetryListener implements IAnnotationTransformer {
                           Constructor testConstructor,
                           Method testMethod) {
 
-        annotation.setRetryAnalyzer(RetryAnalyzer.class);
+        if (!Config.isRetryEnabled()) {
+            return;
+        }
+
+        if (annotation.getRetryAnalyzerClass() == null) {
+            annotation.setRetryAnalyzer(RetryAnalyzer.class);
+        }
     }
 }

@@ -7,8 +7,8 @@ public class FeatureFlagDataProvider {
     @DataProvider(name = "featureToggle")
     public static Object[][] featureToggle() {
         return new Object[][]{
-                {true},
-                {false}
+                {"NEW_BOOKING_FLOW", true},
+                {"NEW_BOOKING_FLOW", false}
         };
     }
 }

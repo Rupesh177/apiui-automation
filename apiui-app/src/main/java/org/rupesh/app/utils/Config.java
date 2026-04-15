@@ -177,6 +177,13 @@ public class Config {
         return get("driver", "selenium");
     }
 
+    // -------------------------------
+    // Retry
+    // -------------------------------
+    public static boolean isRetryEnabled() {
+        return getBoolean("retry.enabled", "true");
+    }
+
     public static String getBrowser() {
         return get("browser", "chrome");
     }
