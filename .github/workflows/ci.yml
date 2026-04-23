@@ -1,108 +1,154 @@
 name: UI + API Automation CI
 
 on:
-  push:
-    branches: [ "main" ]
-  pull_request:
+push:
+branches: [ "main" ]
+pull_request:
 
 jobs:
-  test:
-    runs-on: ubuntu-latest
+test:
+runs-on: ubuntu-latest
+  
+  ```
+steps:
 
-    steps:
+  # -------------------------------
+  # Checkout code
+  # -------------------------------
+  - name: Checkout repository
+    uses: actions/checkout@v4
 
-      # -------------------------------
-      # Checkout code
-      # -------------------------------
-      - name: Checkout repository
-        uses: actions/checkout@v4
+  # -------------------------------
+  # Setup Java
+  # -------------------------------
+  - name: Setup Java 21
+    uses: actions/setup-java@v4
+    with:
+      distribution: temurin
+      java-version: 21
 
-      # -------------------------------
-      # Setup Java
-      # -------------------------------
-      - name: Setup Java 21
-        uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: 21
+  # -------------------------------
+  # Cache Maven dependencies
+  # -------------------------------
+  - name: Cache Maven packages
+    uses: actions/cache@v4
+    with:
+      path: ~/.m2
+      key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+      restore-keys: |
+        ${{ runner.os }}-m2
 
-      # -------------------------------
-      # Cache Maven dependencies
-      # -------------------------------
-      - name: Cache Maven packages
-        uses: actions/cache@v4
-        with:
-          path: ~/.m2
-          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
-          restore-keys: |
-            ${{ runner.os }}-m2
+  # -------------------------------
+  # Build test-data-service
+  # -------------------------------
+  - name: Build test-data-service
+    run: |
+      cd test-data-service
+      mvn clean package -DskipTests
+      cd ..
 
-      # -------------------------------
-      # Build test-data-service
-      # -------------------------------
-      - name: Build test-data-service
-        run: |
-          cd test-data-service
-          mvn clean package -DskipTests
-          cd ..
+  # -------------------------------
+  # Create Allure history folder
+  # -------------------------------
+  - name: Prepare Allure history
+    run: mkdir -p allure-history
 
-      # -------------------------------
-      # Create Allure history folder
-      # -------------------------------
-      - name: Prepare Allure history
-        run: mkdir -p allure-history
+  # ===============================
+  # 🚀 UPDATED DOCKER EXECUTION
+  # ===============================
 
-      # -------------------------------
-      # Run Docker Compose
-      # -------------------------------
-      - name: Run tests via Docker
-        run: |
-          docker-compose -f docker-compose.yml -f docker-compose.ci.yml up --build --abort-on-container-exit
+  # -------------------------------
+  # Start Docker services
+  # -------------------------------
+  - name: Start services
+    run: |
+      docker-compose -f docker-compose.yml -f docker-compose.ci.yml up -d --build
 
-      # -------------------------------
-      # Copy Allure history (persist)
-      # -------------------------------
-      - name: Save Allure history
-        if: always()
-        run: |
-          if [ -d "allure-history" ]; then
-            echo "History exists"
-          fi
+  # -------------------------------
+  # Wait for Selenium Grid
+  # -------------------------------
+  - name: Wait for Selenium Grid
+    run: |
+      echo "Waiting for Selenium Grid..."
+      for i in {1..20}; do
+        if curl -s http://localhost:4444/wd/hub/status | grep -q "ready"; then
+          echo "Grid is ready"
+          break
+        fi
+        sleep 3
+      done
 
-      # -------------------------------
-      # Upload Allure results
-      # -------------------------------
-      - name: Upload Allure Results
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: allure-results
-          path: allure-results
+  # -------------------------------
+  # Wait for Vault
+  # -------------------------------
+  - name: Wait for Vault
+    run: |
+      echo "Waiting for Vault..."
+      for i in {1..20}; do
+        if curl -s http://localhost:8200/v1/sys/health > /dev/null 2>&1; then
+          echo "Vault is ready"
+          break
+        fi
+        sleep 2
+      done
 
-      # -------------------------------
-      # Upload Allure Report
-      # -------------------------------
-      - name: Upload Allure Report
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: allure-report
-          path: target/site/allure-maven-plugin
+  # -------------------------------
+  # Run tests inside container
+  # -------------------------------
+  - name: Execute Tests
+    run: |
+      docker-compose exec -T test-runner mvn clean test
 
-      # -------------------------------
-      # Fail job if tests failed
-      # -------------------------------
-      - name: Fail if tests failed
-        if: failure()
-        run: exit 1
+  # -------------------------------
+  # Copy Allure history (persist)
+  # -------------------------------
+  - name: Save Allure history
+    if: always()
+    run: |
+      if [ -d "allure-history" ]; then
+        echo "History exists"
+      fi
 
-      # -------------------------------
-      # Detect changed files
-      # -------------------------------
-      - name: Detect changed files
-        id: changes
-        run: |
-          git fetch origin main
-          git diff --name-only origin/main...HEAD > changed-files.txt
-          cat changed-files.txt
+  # -------------------------------
+  # Upload Allure results
+  # -------------------------------
+  - name: Upload Allure Results
+    if: always()
+    uses: actions/upload-artifact@v4
+    with:
+      name: allure-results
+      path: allure-results
 
+  # -------------------------------
+  # Upload Allure Report
+  # -------------------------------
+  - name: Upload Allure Report
+    if: always()
+    uses: actions/upload-artifact@v4
+    with:
+      name: allure-report
+      path: target/site/allure-maven-plugin
+
+  # -------------------------------
+  # Shutdown containers
+  # -------------------------------
+  - name: Shutdown services
+    if: always()
+    run: docker-compose down
+
+  # -------------------------------
+  # Fail job if tests failed
+  # -------------------------------
+  - name: Fail if tests failed
+    if: failure()
+    run: exit 1
+
+  # -------------------------------
+  # Detect changed files
+  # -------------------------------
+  - name: Detect changed files
+    id: changes
+    run: |
+      git fetch origin main
+      git diff --name-only origin/main...HEAD > changed-files.txt
+      cat changed-files.txt

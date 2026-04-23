@@ -1,13 +1,12 @@
 package org.rupesh.app.listeners;
 
+import org.rupesh.app.base.TestKeyBuilder;
 import org.rupesh.app.exceptionNretry.RetryDataRegistry;
 import org.rupesh.app.utils.Config;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testng.IRetryAnalyzer;
 import org.testng.ITestResult;
-
-import java.util.Arrays;
 
 public class RetryAnalyzer implements IRetryAnalyzer {
 
@@ -28,33 +27,17 @@ public class RetryAnalyzer implements IRetryAnalyzer {
         }
 
         if (currentCount < maxRetry) {
-
             currentCount++;
             result.setAttribute(RETRY_COUNT, currentCount);
 
-            String testKey = buildTestKey(result);
+            String testKey = TestKeyBuilder.build(result);
             RetryDataRegistry.markRetrying(testKey);
 
             log.info("Retrying test: {} | Attempt: {}", result.getName(), currentCount);
-
             return true;
         }
 
         log.warn("Max retry reached for test: {}", result.getName());
         return false;
-    }
-
-    private String buildTestKey(ITestResult result) {
-
-        Object[] params = result.getParameters();
-
-        String paramKey = (params != null && params.length > 0)
-                ? "_" + Arrays.toString(params)
-                : "";
-
-        return result.getTestClass().getName()
-                + "#"
-                + result.getMethod().getMethodName()
-                + paramKey;
     }
 }

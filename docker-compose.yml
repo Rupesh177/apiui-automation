@@ -16,6 +16,7 @@ services:
   # -------------------------------
   chrome-node:
     image: selenium/node-chrome:4.21
+    container_name: chrome-node
     depends_on:
       - selenium-hub
     shm_size: "2gb"
@@ -99,7 +100,7 @@ services:
     command: vault server -dev
 
   # -------------------------------
-  # VAULT-INIT
+  # VAULT INIT
   # -------------------------------
   vault-init:
     image: hashicorp/vault:latest
@@ -108,44 +109,119 @@ services:
       - vault
     volumes:
       - ./docker/vault/init-vault.sh:/init-vault.sh
-    entrypoint: [ "/bin/sh", "/init-vault.sh" ]
+    entrypoint: ["/bin/sh", "/init-vault.sh"]
 
   # -------------------------------
-  # TEST RUNNER (SCALABLE)
+  # TEST RUNNER
   # -------------------------------
   test-runner:
     build: docker
+    container_name: test-runner
     depends_on:
       - selenium-hub
       - chrome-node
       - test-data
       - healenium
-      - -vault
-      - -vault-init
+      - vault
+      - vault-init
+      - prometheus
+      - grafana
     environment:
-      - GRID_URL=http://selenium-hub:4444/wd/hub
-      - TESTDATA_URL=http://test-data:8081
+      # -------------------------------
+      # ENV SELECTION
+      # -------------------------------
+      - ENV=dev
+
+      # -------------------------------
+      # EXECUTION
+      # -------------------------------
       - SUITE=tests/testng.xml
+      - DRIVER=selenium
       - BROWSER=chrome
       - HEADLESS=true
       - REMOTE=true
+      - HEALING=true
 
       # -------------------------------
-      # VAULT CONFIG
+      # ENV-SPECIFIC BASE URLS
+      # -------------------------------
+      - BASEURL_DEV=https://dev.api.makemytrip.com
+      - BASEURL_STAGE=https://stage.api.makemytrip.com
+      - BASEURL_PILOT=https://pilot.api.makemytrip.com
+      - BASEURL_PROD=https://api.makemytrip.com
+
+      # -------------------------------
+      # ENV-SPECIFIC TEST DATA URLS
+      # -------------------------------
+      - TESTDATA_URL_DEV=http://test-data:8081
+      - TESTDATA_URL_STAGE=http://test-data:8081
+      - TESTDATA_URL_PILOT=http://test-data:8081
+      - TESTDATA_URL_PROD=http://test-data:8081
+
+      # -------------------------------
+      # ENV-SPECIFIC GRID URLS
+      # -------------------------------
+      - GRID_URL_DEV=http://selenium-hub:4444/wd/hub
+      - GRID_URL_STAGE=http://selenium-hub:4444/wd/hub
+      - GRID_URL_PILOT=http://selenium-hub:4444/wd/hub
+      - GRID_URL_PROD=http://selenium-hub:4444/wd/hub
+
+      # -------------------------------
+      # ENV-SPECIFIC FEATURE FLAG URLS
+      # -------------------------------
+      - FEATURE_FLAG_URL_DEV=http://feature-flags:8090
+      - FEATURE_FLAG_URL_STAGE=http://feature-flags:8090
+      - FEATURE_FLAG_URL_PILOT=http://feature-flags:8090
+      - FEATURE_FLAG_URL_PROD=http://feature-flags:8090
+
+      # -------------------------------
+      # ENV-SPECIFIC KAFKA URLS
+      # -------------------------------
+      - KAFKA_URL_DEV=dev-kafka:9092
+      - KAFKA_URL_STAGE=stage-kafka:9092
+      - KAFKA_URL_PILOT=pilot-kafka:9092
+      - KAFKA_URL_PROD=prod-kafka:9092
+
+      # -------------------------------
+      # ENV-SPECIFIC DB URLS / USERS
+      # -------------------------------
+      - DB_URL_DEV=jdbc:mysql://dev-db:3306/test
+      - DB_URL_STAGE=jdbc:mysql://stage-db:3306/test
+      - DB_URL_PILOT=jdbc:mysql://pilot-db:3306/test
+      - DB_URL_PROD=jdbc:mysql://prod-db:3306/test
+
+      - DB_USER_DEV=root
+      - DB_USER_STAGE=root
+      - DB_USER_PILOT=root
+      - DB_USER_PROD=root
+
+      # -------------------------------
+      # VAULT
       # -------------------------------
       - VAULT_ENABLED=true
       - VAULT_URL=http://vault:8200
       - VAULT_TOKEN=my-root-token
-      - VAULT_SECRET_PATH=/v1/secret/data/test
+      - VAULT_APP_NAME=apiui
 
       # -------------------------------
-      # HEALENIUM FLAG
+      # JIRA
       # -------------------------------
-      - healing=true
+      - JIRA_ENABLED=true
+      - JIRA_URL=https://your-domain.atlassian.net
+      - JIRA_PROJECT=QA
 
       # -------------------------------
-      # OPTIONAL: TIA SUPPORT
+      # METRICS
       # -------------------------------
+      - METRICS_ENABLED=true
+      - METRICS_PORT=9090
+
+      # -------------------------------
+      # RETRY / AI / OPTIONAL FLAGS
+      # -------------------------------
+      - RETRY_ENABLED=true
+      - RETRY_COUNT=2
+      - AI_ENABLED=false
       - USE_TIA=true
 
     volumes:

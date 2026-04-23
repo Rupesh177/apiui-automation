@@ -34,7 +34,7 @@ public class LoginTest extends BaseTest {
         TestContext.put("email", loginRequest.getEmail());
 
         // UI FLOW
-        driver().open(Config.getBaseUrl());
+        driver().open(Config.getUiBaseUrl());
 
         LoginPage loginPage = new LoginPage();
         loginPage.login(loginRequest.getEmail(), loginRequest.getPassword());

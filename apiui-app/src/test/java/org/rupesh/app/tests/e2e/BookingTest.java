@@ -42,7 +42,7 @@ public class BookingTest extends BaseTest {
         );
 
         // UI
-        driver().open(Config.getBaseUrl());
+        driver().open(Config.getUiBaseUrl());
 
         bookingActions().completeBooking("DEL", "BOM");
 

@@ -3,12 +3,50 @@ version: "3.8"
 services:
 
   selenium-hub:
-    ports: []
+    ports: []   # no exposure needed in CI
+
+  chrome-node:
+    shm_size: "2gb"
 
   test-runner:
     environment:
+
+      # -------------------------------
+      # ENV CONTROL
+      # -------------------------------
+      - ENV=stage
+
+      # -------------------------------
+      # EXECUTION
+      # -------------------------------
       - HEADLESS=true
+      - REMOTE=true
+      - BROWSER=chrome
       - KEEP_CONTAINER_ALIVE=false
+
+      # -------------------------------
+      # GRID
+      # -------------------------------
+      - GRID_URL_STAGE=http://selenium-hub:4444/wd/hub
+
+      # -------------------------------
+      # TEST DATA
+      # -------------------------------
+      - TESTDATA_URL_STAGE=http://test-data:8081
+
+      # -------------------------------
+      # BASE URL
+      # -------------------------------
+      - BASEURL_STAGE=https://stage.api.makemytrip.com
+
+      # -------------------------------
+      # VAULT
+      # -------------------------------
+      - VAULT_ENABLED=true
+      - VAULT_URL=http://vault:8200
+      - VAULT_TOKEN=my-root-token
+      - VAULT_APP_NAME=apiui
+
     volumes:
       - ./allure-results:/app/allure-results
       - ./allure-history:/app/allure-history

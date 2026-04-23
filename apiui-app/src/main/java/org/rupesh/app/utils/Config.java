@@ -1,6 +1,11 @@
 package org.rupesh.app.utils;
 
+import java.util.Set;
+
 public class Config {
+
+    private static final Set<String> VALID_ENVS =
+            Set.of("dev", "stage", "pilot", "prod");
 
     private Config() {
     }
@@ -42,28 +47,39 @@ public class Config {
     // ENVIRONMENT
     // -------------------------------
     public static String getEnv() {
-        return get("env", "dev");
+        String env = get("env", "dev").toLowerCase().trim();
+
+        if (!VALID_ENVS.contains(env)) {
+            throw new RuntimeException("Invalid env: " + env);
+        }
+
+        return env;
+    }
+
+    // -------------------------------
+    // ENV-SCOPED RESOLVER
+    // -------------------------------
+    private static String getEnvScoped(String key, String defaultValue) {
+        return get(key + "." + getEnv().toLowerCase(), defaultValue);
     }
 
     // -------------------------------
     // API
     // -------------------------------
     public static String getBaseUrl() {
-        return get("baseUrl", "https://api.makemytrip.com");
+        return getEnvScoped("baseUrl", "https://dev.api.makemytrip.com");
     }
 
-    // -------------------------------
-    // Get TestData URL
-    // -------------------------------
     public static String getTestDataUrl() {
-        return get("testdata.url", "http://localhost:8081");
+        return getEnvScoped("testdata.url", "http://localhost:8081");
     }
+
 
     // -------------------------------
     // DB
     // -------------------------------
     public static String getDbUrl() {
-        return get("db.url", "jdbc:mysql://localhost:3306/test");
+        return getEnvScoped("db.url", "jdbc:mysql://localhost:3306/test");
     }
 
     public static String getDbUser() {
@@ -82,14 +98,14 @@ public class Config {
     // KAFKA
     // -------------------------------
     public static String getKafkaUrl() {
-        return get("kafka.url", "localhost:9092");
+        return getEnvScoped("kafka.url", "localhost:9092");
     }
 
     // -------------------------------
     // FEATURE FLAGS
     // -------------------------------
     public static String getFeatureFlagUrl() {
-        return get("feature.flag.url", "http://localhost:8090");
+        return getEnvScoped("feature.flag.url", "http://localhost:8090");
     }
 
     // -------------------------------
@@ -118,8 +134,12 @@ public class Config {
         return get("vault.token", "");
     }
 
+    public static String getVaultAppName() {
+        return get("vault.app.name", "apiui");
+    }
+
     public static String getVaultSecretPath() {
-        return get("vault.secret.path", "/v1/secret/data/test");
+        return "/v1/secret/data/" + getEnv() + "/" + getVaultAppName();
     }
 
     // -------------------------------
@@ -157,13 +177,6 @@ public class Config {
     }
 
     // -------------------------------
-    // RETRY / STABILITY
-    // -------------------------------
-    public static int getMaxRetry() {
-        return Integer.parseInt(get("retry.count", "2"));
-    }
-
-    // -------------------------------
     // AI Flag
     // -------------------------------
     public static boolean isAiEnabled() {
@@ -173,15 +186,12 @@ public class Config {
     // -------------------------------
     // UI / DRIVER
     // -------------------------------
-    public static String getDriverType() {
-        return get("driver", "selenium");
+    public static String getUiBaseUrl() {
+        return getEnvScoped("ui.baseUrl", "https://www.makemytrip.com");
     }
 
-    // -------------------------------
-    // Retry
-    // -------------------------------
-    public static boolean isRetryEnabled() {
-        return getBoolean("retry.enabled", "true");
+    public static String getDriverType() {
+        return get("driver", "selenium");
     }
 
     public static String getBrowser() {
@@ -201,6 +211,18 @@ public class Config {
     }
 
     public static String getGridUrl() {
-        return get("grid.url", "http://localhost:4444/wd/hub");
+        return getEnvScoped("grid.url", "http://localhost:4444/wd/hub");
     }
+
+    // -------------------------------
+    // Retry
+    // -------------------------------
+    public static int getMaxRetry() {
+        return getInt("retry.count", 2);
+    }
+
+    public static boolean isRetryEnabled() {
+        return getBoolean("retry.enabled", "true");
+    }
+
 }
